@@ -1,4 +1,5 @@
-const API_URL = '/api'
+const PREFIX = '/api'
+const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL + PREFIX;
 
 export async function apiRequest(endpoint: string, options: RequestInit = {}) {
   const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
@@ -28,6 +29,6 @@ export async function apiRequest(endpoint: string, options: RequestInit = {}) {
   if (!text) {
     throw new Error('Empty response from server');
   }
-  
+
   return JSON.parse(text);
 }
