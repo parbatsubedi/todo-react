@@ -1,5 +1,5 @@
 import { loginHook } from "@/hooks/auth/login";
-import { User } from "@/types/User";
+import User from "@/types/User";
 import { useState } from "react";
 
 export async function loginUser(email: string, password: string) {
