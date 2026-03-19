@@ -1,16 +1,10 @@
 import { apiRequest } from "@/services/apiClient";
+import Todo from "@/types/Todo";
 
 interface TodoResponse {
-    id: number;
-    title: string;
-    description: string;
-    status: string;
-    userId: number;
-    user: {
-        id: number;
-        name: string;
-        email: string;
-    };
+    status: boolean;
+    message: string;
+    data: Todo[];
 }
 
 export default async function fetchTodos() {
@@ -21,5 +15,5 @@ export default async function fetchTodos() {
         },
     });
 
-    return todosResponse as TodoResponse[];
+    return todosResponse as TodoResponse;
 }

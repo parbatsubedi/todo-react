@@ -1,6 +1,7 @@
-import createTodo from '@/hooks/todo/createTodo';
+import { createTodo } from '@/hooks/todo/createTodo';
 import { useAuth } from '@/providers/AuthProvider';
 import { useState } from 'react';
+import { toast } from 'react-toastify';
 
 type Props = {
     onSuccess: () => void;
@@ -28,6 +29,7 @@ function AddTodoForm({ onSuccess }: Props) {
         });
     };
 
+
     const handleAddTodo = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -39,8 +41,10 @@ function AddTodoForm({ onSuccess }: Props) {
                 userId: 1,
             });
 
+            toast.success('Todo created successfully!');
             onSuccess();
-        } catch (err) {
+        } catch (err: any) {
+            toast.error(err?.message || 'Failed to create todo.');
             console.error(err);
         } finally {
             setLoading(false);

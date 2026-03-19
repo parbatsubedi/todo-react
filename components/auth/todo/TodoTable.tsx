@@ -1,16 +1,50 @@
 import AddTodoForm from '@/components/forms/TodoForm/AddTodoForm';
+import TodoForm from '@/components/forms/TodoForm/TodoForm';
 import Modal from '@/components/Modal';
+import { deleteTodo } from '@/hooks/todo/createTodo';
 import fetchTodos from '@/hooks/todo/fetchTodos';
 import Todo from '@/types/Todo';
 import { useEffect, useState } from 'react'
+import { toast } from 'react-toastify';
 
 function TodoTable() {
     const [todos, setTodos] = useState<Todo[]>([])
     const [isModalOpen, setIsModalOpen] = useState(false)
+    // const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+    const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null)
+
+    const handleAdd = () => {
+        setSelectedTodo(null);
+        setIsModalOpen(true);
+    };
+
+    const handleEdit = (todo: Todo) => {
+        setSelectedTodo(todo);
+        setIsModalOpen(true);
+    };
+
+    // const 
+
+    const handleDelete = async (todo: Todo) => {
+        try {
+            const successResponse: any = await deleteTodo(todo.id);
+            if (successResponse.status) {
+                toast.success(successResponse.message);
+            }
+            loadTodos();
+        } catch (err: any) {
+            toast.error(err?.message || 'Failed to delete todo.');
+        }
+    }
 
     const loadTodos = async () => {
-        const todosResponse = await fetchTodos();
-        setTodos(todosResponse);
+        try {
+            const todosResponse = await fetchTodos();
+            setTodos(todosResponse.data);
+            toast.success(todosResponse.message);
+        } catch (err: any) {
+            toast.error(err?.message || 'Failed to load todos.');
+        }
     };
 
     useEffect(() => {
@@ -59,15 +93,15 @@ function TodoTable() {
                                             {todo.description}
                                         </td>
 
-                                        {/* Status */}
+                                        {/* Completed */}
                                         <td className="px-6 py-4">
                                             <span
-                                                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${todo.status === 'completed'
+                                                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${todo.completed
                                                     ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
                                                     : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300'
                                                     }`}
                                             >
-                                                {todo.status}
+                                                {todo.completed ? 'Completed' : 'Pending'}
                                             </span>
                                         </td>
 
@@ -75,10 +109,10 @@ function TodoTable() {
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center text-sm font-semibold text-gray-600 dark:text-gray-200">
-                                                    {todo.user.name.charAt(0).toUpperCase()}
+                                                    {todo?.user?.name.charAt(0).toUpperCase()}
                                                 </div>
                                                 <span className="text-gray-700 dark:text-gray-200 text-sm">
-                                                    {todo.user.name}
+                                                    {todo?.user?.name}
                                                 </span>
                                             </div>
                                         </td>
@@ -86,10 +120,10 @@ function TodoTable() {
                                         {/* Actions */}
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex justify-end gap-3">
-                                                <button className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium">
+                                                <button className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium" onClick={() => handleEdit(todo)}>
                                                     Edit
                                                 </button>
-                                                <button className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm font-medium">
+                                                <button className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm font-medium" onClick={() => handleDelete(todo)}>
                                                     Delete
                                                 </button>
                                             </div>
@@ -112,10 +146,11 @@ function TodoTable() {
             </div>
             {isModalOpen && (
                 <Modal onClose={() => setIsModalOpen(false)}>
-                    <AddTodoForm
+                    <TodoForm
+                        selectedTodo={selectedTodo}
                         onSuccess={() => {
-                            setIsModalOpen(false); // close modal
-                            loadTodos(); // 🔥 refresh table
+                            setIsModalOpen(false);
+                            loadTodos();
                         }}
                     />
                 </Modal>

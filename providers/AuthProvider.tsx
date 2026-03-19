@@ -3,6 +3,7 @@
 import { createContext, useState, ReactNode, useContext } from 'react';
 import { loginHook } from '@/hooks/auth/login';
 import { apiRequest } from '@/services/apiClient';
+import { toast } from 'react-toastify';
 
 interface AuthContextType {
     user: any;
@@ -25,7 +26,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsLoading(true);
         try {
             const response = await loginHook(email, password);
-            
+
             const accessToken = response.token;
             const userData = response.user;
 
@@ -34,6 +35,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             setToken(accessToken);
             setUser(userData);
+            toast.success(`Welcome back, ${userData.name}!`);
+        } catch (error: any) {
+            toast.error(error?.message || 'Login failed. Please check your credentials.');
+            throw error;
         } finally {
             setIsLoading(false);
         }
@@ -47,10 +52,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } catch (error) {
             console.error('Logout error:', error);
         }
-        
+
         localStorage.removeItem('access_token');
+        document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
         setToken(null);
         setUser(null);
+        toast.success('Logged out successfully.');
     };
 
     return (
